@@ -1,20 +1,76 @@
-<!-- index.html - Sign Up Page --><!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ROSE Sign Up</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #ffe0ec, #d5f0ff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 20px;
+      color: #ff4081;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #ff4081;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      width: 100%;
+      margin-top: 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #e0356e;
+    }
+    p {
+      margin-top: 15px;
+    }
+    a {
+      color: #0077cc;
+    }
+  </style>
 </head>
 <body>
-  <h2>Sign Up</h2>
-  <input type="text" id="username" placeholder="Username (Unique)" />
-  <input type="email" id="email" placeholder="Email" />
-  <input type="password" id="password" placeholder="Password" />
-  <input type="text" id="referralCode" placeholder="Referral Code (Optional)" />
-  <button onclick="signUp()">Sign Up</button>
-  <p>Already have an account? <a href="login.html">Login</a></p>  <script type="module">
+  <div class="container">
+    <h2>Sign Up</h2>
+    <input type="text" id="username" placeholder="Username (Unique)" />
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <input type="text" id="referralCode" placeholder="Referral Code (Optional)" />
+    <button onclick="signUp()">Sign Up</button>
+    <p>Already have an account? <a href="login.html">Login</a></p>
+  </div>
+
+  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-    import { getFirestore, collection, query, where, getDocs, doc, setDoc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs, doc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDwU-c3lOyKWkz345F45atkIVbwOdg738Q",
@@ -36,9 +92,10 @@
       const password = document.getElementById("password").value;
       const referralCode = document.getElementById("referralCode").value.trim();
 
+      if (!username || !email || !password) return alert("Fill all required fields");
+
       const usernameQuery = query(collection(db, "users"), where("username", "==", username));
       const existingUsers = await getDocs(usernameQuery);
-      if (!username || !email || !password) return alert("Fill all required fields");
       if (!existingUsers.empty) return alert("Username already taken");
 
       try {
@@ -73,57 +130,6 @@
         alert("Error: " + error.message);
       }
     };
-  </script></body>
-</html><!-- login.html - Login Page --><!DOCTYPE html><html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ROSE Login</title>
-</head>
-<body>
-  <h2>Login</h2>
-  <input type="email" id="email" placeholder="Email" />
-  <input type="password" id="password" placeholder="Password" />
-  <button onclick="login()">Login</button>
-  <p>Don't have an account? <a href="index.html">Sign Up</a></p>  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDwU-c3lOyKWkz345F45atkIVbwOdg738Q",
-      authDomain: "rose-c7fff.firebaseapp.com",
-      projectId: "rose-c7fff",
-      storageBucket: "rose-c7fff.firebasestorage.app",
-      messagingSenderId: "1040196953114",
-      appId: "1:1040196953114:web:056146d956e76591ab5da3",
-      measurementId: "G-HV8PGLHF6D"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
-    const db = getFirestore();
-
-    window.login = async () => {
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value.trim();
-
-      try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        const userData = userDoc.data();
-
-        localStorage.setItem("user", JSON.stringify({
-          uid: user.uid,
-          username: userData.username,
-          email: userData.email
-        }));
-
-        window.location.href = "app.html";
-      } catch (error) {
-        alert("Login failed: " + error.message);
-      }
-    };
-  </script></body>
-</html><!-- Next file will be app.html (main app with mining, rewards, and settings). Let me know when you're ready. -->
+  </script>
+</body>
+  </html>
