@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ROSE Sign Up</title>
+  <meta charset="UTF-8">
+  <title>ROSE - Sign Up</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://smtpjs.com/v3/smtp.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #ffe0ec, #d5f0ff);
+      background: linear-gradient(135deg, #ff416c, #ff4b2b);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -16,16 +17,15 @@
     }
     .container {
       background: white;
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-      width: 100%;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      width: 90%;
       max-width: 400px;
-      text-align: center;
     }
-    h2 {
-      margin-bottom: 20px;
-      color: #ff4081;
+    .container h2 {
+      text-align: center;
+      color: #ff416c;
     }
     input {
       width: 100%;
@@ -34,43 +34,60 @@
       border-radius: 8px;
       border: 1px solid #ccc;
     }
+    .field-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
     button {
-      background-color: #ff4081;
-      color: white;
       padding: 10px;
+      width: 100%;
       border: none;
       border-radius: 8px;
-      width: 100%;
-      margin-top: 10px;
+      background: #ff416c;
+      color: white;
+      font-size: 16px;
       cursor: pointer;
-      font-weight: bold;
     }
-    button:hover {
-      background-color: #e0356e;
+    .toggle-btn {
+      margin-top: -10px;
+      font-size: 12px;
+      color: #007bff;
+      cursor: pointer;
+      text-align: right;
     }
-    p {
-      margin-top: 15px;
-    }
-    a {
-      color: #0077cc;
+    .error {
+      color: red;
+      font-size: 14px;
+      text-align: center;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Sign Up</h2>
-    <input type="text" id="username" placeholder="Username (Unique)" />
-    <input type="email" id="email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Password" />
-    <input type="text" id="referralCode" placeholder="Referral Code (Optional)" />
+    <h2>Create ROSE Account</h2>
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="email" id="email" placeholder="Email" required>
+    
+    <div class="field-row">
+      <input type="text" id="verificationCodeInput" placeholder="Verification Code">
+      <button id="sendCodeBtn" onclick="sendVerificationCode()">Send</button>
+    </div>
+
+    <input type="password" id="password" placeholder="Password" required>
+    <div class="toggle-btn" onclick="togglePassword()">Show/Hide Password</div>
+    
+    <input type="text" id="referral" placeholder="Referral Code (Optional)">
+    
+    <div class="error" id="errorMsg"></div>
     <button onclick="signUp()">Sign Up</button>
-    <p>Already have an account? <a href="login.html">Login</a></p>
   </div>
 
+  <!-- Firebase and App Script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-    import { getFirestore, collection, query, where, getDocs, doc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDocs, collection, query, where } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDwU-c3lOyKWkz345F45atkIVbwOdg738Q",
@@ -83,53 +100,88 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
+    const auth = getAuth(app);
     const db = getFirestore(app);
+
+    let verificationCode = "";
+
+    window.sendVerificationCode = () => {
+      const email = document.getElementById("email").value;
+      if (!email) {
+        document.getElementById("errorMsg").textContent = "Please enter your email first.";
+        return;
+      }
+      verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+      Email.send({
+        SecureToken: "59769763-2323-4f24-a9b6-b25f8233ef44",
+        To: email,
+        From: "roseblockchain727@gmail.com",
+        Subject: "ROSE Email Verification",
+        Body: `Your verification code is: <b>${verificationCode}</b>`
+      }).then(message => {
+        if (message === "OK") {
+          document.getElementById("errorMsg").style.color = "green";
+          document.getElementById("errorMsg").textContent = "Verification code sent!";
+          document.getElementById("sendCodeBtn").disabled = true;
+          let count = 60;
+          const interval = setInterval(() => {
+            document.getElementById("sendCodeBtn").textContent = `${count--}s`;
+            if (count < 0) {
+              clearInterval(interval);
+              document.getElementById("sendCodeBtn").disabled = false;
+              document.getElementById("sendCodeBtn").textContent = "Send";
+            }
+          }, 1000);
+        } else {
+          document.getElementById("errorMsg").style.color = "red";
+          document.getElementById("errorMsg").textContent = "Failed to send email.";
+        }
+      });
+    };
+
+    window.togglePassword = () => {
+      const password = document.getElementById("password");
+      password.type = password.type === "password" ? "text" : "password";
+    };
 
     window.signUp = async () => {
       const username = document.getElementById("username").value.trim();
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
-      const referralCode = document.getElementById("referralCode").value.trim();
+      const referral = document.getElementById("referral").value.trim();
+      const enteredCode = document.getElementById("verificationCodeInput").value.trim();
 
-      if (!username || !email || !password) return alert("Fill all required fields");
-
-      const usernameQuery = query(collection(db, "users"), where("username", "==", username));
-      const existingUsers = await getDocs(usernameQuery);
-      if (!existingUsers.empty) return alert("Username already taken");
-
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const uid = userCredential.user.uid;
-
-        await setDoc(doc(db, "users", uid), {
-          username,
-          email,
-          tokens: 0,
-          referrals: [],
-          referredBy: referralCode || null,
-          lastTap: null
-        });
-
-        if (referralCode) {
-          const refQuery = query(collection(db, "users"), where("username", "==", referralCode));
-          const refSnapshot = await getDocs(refQuery);
-          if (!refSnapshot.empty) {
-            const refDoc = refSnapshot.docs[0];
-            const refData = refDoc.data();
-            await updateDoc(doc(db, "users", refDoc.id), {
-              tokens: (refData.tokens || 0) + 100,
-              referrals: [...(refData.referrals || []), username]
-            });
-          }
-        }
-
-        alert("Sign up successful!");
-        window.location.href = "login.html";
-      } catch (error) {
-        alert("Error: " + error.message);
+      if (enteredCode !== verificationCode) {
+        document.getElementById("errorMsg").textContent = "Verification code is wrong!";
+        return;
       }
+
+      // Check if username is unique
+      const q = query(collection(db, "users"), where("username", "==", username));
+      const querySnapshot = await getDocs(q);
+      if (!username || querySnapshot.size > 0) {
+        document.getElementById("errorMsg").textContent = "Username already taken.";
+        return;
+      }
+
+      createUserWithEmailAndPassword(auth, email, password)
+        .then(async (userCredential) => {
+          const user = userCredential.user;
+          await setDoc(doc(db, "users", user.uid), {
+            username,
+            email,
+            tokens: 0,
+            referrals: [],
+            referralCode: referral || null,
+            createdAt: new Date()
+          });
+          window.location.href = "login.html";
+        })
+        .catch((error) => {
+          document.getElementById("errorMsg").textContent = error.message;
+        });
     };
   </script>
 </body>
-  </html>
+        </html>
