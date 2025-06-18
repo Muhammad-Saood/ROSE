@@ -1,232 +1,212 @@
-<!DOCTYPE html>  <html lang="en">  
-<head>  
-  <meta charset="UTF-8">  
-  <title>ROSE - Sign Up</title>  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-  <style>  
-    body {  
-      background: linear-gradient(135deg, #ff416c, #ff4b2b);  
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;  
-      display: flex;  
-      align-items: center;  
-      justify-content: center;  
-      height: 100vh;  
-      margin: 0;  
-    }  
-    .container {  
-      background: white;  
-      padding: 2rem;  
-      border-radius: 1rem;  
-      box-shadow: 0 0 20px rgba(0,0,0,0.2);  
-      width: 90%;  
-      max-width: 400px;  
-    }  
-    .container h2 {  
-      text-align: center;  
-      color: #ff416c;  
-    }  
-    input {  
-      width: 100%;  
-      padding: 10px;  
-      margin: 8px 0;  
-      border-radius: 8px;  
-      border: 1px solid #ccc;  
-    }  
-    .field-row {  
-      display: flex;  
-      align-items: center;  
-      gap: 10px;  
-    }  
-    button {  
-      padding: 10px;  
-      width: 100%;  
-      border: none;  
-      border-radius: 8px;  
-      background: #ff416c;  
-      color: white;  
-      font-size: 16px;  
-      cursor: pointer;  
-    }  
-    .toggle-btn {  
-      margin-top: -10px;  
-      font-size: 12px;  
-      color: #007bff;  
-      cursor: pointer;  
-      text-align: right;  
-    }  
-    .error {  
-      color: red;  
-      font-size: 14px;  
-      text-align: center;  
-    }  
-    .success {  
-      color: green;  
-      font-size: 14px;  
-      text-align: center;  
-    }  
-  </style>  
-</head>  
-<body>  
-  <div class="container">  
-    <h2>Create ROSE Account</h2>  
-    <input type="text" id="username" placeholder="Username" required>  
-    <input type="email" id="email" placeholder="Email" required>  <div class="field-row">  
-  <input type="text" id="verificationCodeInput" placeholder="Verification Code">  
-  <button id="sendCodeBtn" onclick="sendVerificationCode()">Send</button>  
-</div>  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ROSE - Sign Up</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      background: linear-gradient(135deg, #ff416c, #ff4b2b);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      width: 90%;
+      max-width: 400px;
+    }
+    .container h2 {
+      text-align: center;
+      color: #ff416c;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .field-row {
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      padding: 10px;
+      width: 100%;
+      border: none;
+      border-radius: 8px;
+      background: #ff416c;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .toggle-btn {
+      margin-top: -10px;
+      font-size: 12px;
+      color: #007bff;
+      cursor: pointer;
+      text-align: right;
+    }
+    .error, .success {
+      font-size: 14px;
+      text-align: center;
+      margin-top: 5px;
+    }
+    .error {
+      color: red;
+    }
+    .success {
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Create ROSE Account</h2>
+    <input type="text" id="username" placeholder="Username" required />
+    <input type="email" id="email" placeholder="Email" required />
+    
+    <div class="field-row">
+      <input type="text" id="verificationCodeInput" placeholder="Verification Code" />
+      <button type="button" id="sendCodeBtn" onclick="sendVerificationCode()">Send</button>
+    </div>
+    
+    <input type="password" id="password" placeholder="Password" required />
+    <div class="toggle-btn" onclick="togglePassword()">Show/Hide Password</div>
 
-<input type="password" id="password" placeholder="Password" required>  
-<div class="toggle-btn" onclick="togglePassword()">Show/Hide Password</div>  
-  
-<input type="text" id="referral" placeholder="Referral Code (Optional)">  
-  
-<div class="error" id="errorMsg"></div>  
-<div class="success" id="successMsg"></div>  
-<button onclick="signUp()">Sign Up</button>
+    <input type="text" id="referral" placeholder="Referral Code (Optional)" />
 
-  </div>    <!-- Firebase and App Script -->    <script type="module">  
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";  
-    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";  
-    import { getFirestore, doc, setDoc, getDocs, collection, query, where } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";  
-  
-    const firebaseConfig = {  
-      apiKey: "AIzaSyDwU-c3lOyKWkz345F45atkIVbwOdg738Q",  
-      authDomain: "rose-c7fff.firebaseapp.com",  
-      projectId: "rose-c7fff",  
-      storageBucket: "rose-c7fff.firebasestorage.app",  
-      messagingSenderId: "1040196953114",  
-      appId: "1:1040196953114:web:056146d956e76591ab5da3",  
-      measurementId: "G-HV8PGLHF6D"  
-    };  
-  
-    const app = initializeApp(firebaseConfig);  
-    const auth = getAuth(app);  
-    const db = getFirestore(app);  
-  
-    let verificationCode = "";  
-  
-    window.sendVerificationCode = async () => {  
-      const email = document.getElementById("email").value.trim();  
-      const errorMsg = document.getElementById("errorMsg");  
-      const successMsg = document.getElementById("successMsg");  
-  
-      errorMsg.textContent = "";  
-      successMsg.textContent = "";  
-  
-      if (!email) {  
-        errorMsg.textContent = "Please enter your email first.";  
-        return;  
-      }  
-  
-      verificationCode = Math.floor(100000 + Math.random() * 900000).toString();  
-  
-      // Replace this with a backend API call to send the email  
-      try {  
-        const response = await fetch("https://your-backend-api/send-email", {  
-          method: "POST",  
-          headers: { "Content-Type": "application/json" },  
-          body: JSON.stringify({ email, verificationCode })  
-        });  
-  
-        if (response.ok) {  
-          successMsg.textContent = "Verification code sent!";  
-          const sendCodeBtn = document.getElementById("sendCodeBtn");  
-          sendCodeBtn.disabled = true;  
-          let count = 60;  
-          const interval = setInterval(() => {  
-            sendCodeBtn.textContent = `${count--}s`;  
-            if (count < 0) {  
-              clearInterval(interval);  
-              sendCodeBtn.disabled = false;  
-              sendCodeBtn.textContent = "Send";  
-            }  
-          }, 1000);  
-        } else {  
-          throw new Error("Failed to send email.");  
-        }  
-      } catch (error) {  
-        errorMsg.textContent = error.message;  
-      }  
-    };  
-  
-    window.togglePassword = () => {  
-      const password = document.getElementById("password");  
-      password.type = password.type === "password" ? "text" : "password";  
-    };  
-  
-    window.signUp = async () => {  
-      const username = document.getElementById("username").value.trim();  
-      const email = document.getElementById("email").value.trim();  
-      const password = document.getElementById("password").value;  
-      const referral = document.getElementById("referral").value.trim();  
-      const enteredCode = document.getElementById("verificationCodeInput").value.trim();  
-      const errorMsg = document.getElementById("errorMsg");  
-      const successMsg = document.getElementById("successMsg");  
-  
-      errorMsg.textContent = "";  
-      successMsg.textContent = "";  
-  
-      if (!username || !email || !password || !enteredCode) {  
-        errorMsg.textContent = "All fields except referral code are required.";  
-        return;  
-      }  
-  
-      if (enteredCode !== verificationCode) {  
-        errorMsg.textContent = "Verification code is incorrect!";  
-        return;  
-      }  
-  
-      try {  
-        const q = query(collection(db, "users"), where("username", "==", username));  
-        const querySnapshot = await getDocs(q);  
-        if (querySnapshot.size > 0) {  
-          errorMsg.textContent = "Username already taken.";  
-          return;  
-        }  
-  
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);  
-        const user = userCredential.user;  
-  
-        await setDoc(doc(db, "users", user.uid), {  
-          username,  
-          email,  
-          tokens: 0,  
-          referrals: [],  
-          referralCode: referral || null,  
-          createdAt: new Date()  
-        });  
-  
-        successMsg.textContent = "Account created successfully!";  
-        setTimeout(() => {  
-          window.location.href = "login.html";  
-        }, 2000);  
-      } catch (error) {  
-        errorMsg.textContent = error.message;  
-      }  
-    };  
-  </script>
+    <div class="error" id="errorMsg"></div>
+    <div class="success" id="successMsg"></div>
+    <button onclick="signUp()">Sign Up</button>
+  </div>
+
+  <!-- Firebase and SMTP Script -->
+  <script src="https://smtpjs.com/v3/smtp.js"></script>
   <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDocs, collection, query, where } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyDwU-c3lOyKWkz345F45atkIVbwOdg738Q",
-    authDomain: "rose-c7fff.firebaseapp.com",
-    projectId: "rose-c7fff",
-    storageBucket: "rose-c7fff.firebasestorage.app",
-    messagingSenderId: "1040196953114",
-    appId: "1:1040196953114:web:056146d956e76591ab5da3",
-    measurementId: "G-HV8PGLHF6D"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyDwU-c3lOyKWkz345F45atkIVbwOdg738Q",
+      authDomain: "rose-c7fff.firebaseapp.com",
+      projectId: "rose-c7fff",
+      storageBucket: "rose-c7fff.appspot.com",
+      messagingSenderId: "1040196953114",
+      appId: "1:1040196953114:web:056146d956e76591ab5da3",
+      measurementId: "G-HV8PGLHF6D"
+    };
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let verificationCode = "";
+
+    window.sendVerificationCode = async () => {
+      const email = document.getElementById("email").value.trim();
+      const errorMsg = document.getElementById("errorMsg");
+      const successMsg = document.getElementById("successMsg");
+
+      errorMsg.textContent = "";
+      successMsg.textContent = "";
+
+      if (!email) {
+        errorMsg.textContent = "Please enter your email first.";
+        return;
+      }
+
+      verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+      try {
+        await Email.send({
+          SecureToken: "6a45483a-25c0-453b-8816-00a9b524a4f1",
+          To: email,
+          From: "roseblockchain727@gmail.com",
+          Subject: "ROSE Verification Code",
+          Body: `Your ROSE verification code is: <b>${verificationCode}</b>`
+        });
+
+        successMsg.textContent = "Verification code sent!";
+        const sendCodeBtn = document.getElementById("sendCodeBtn");
+        sendCodeBtn.disabled = true;
+        let count = 60;
+        const interval = setInterval(() => {
+          sendCodeBtn.textContent = `${count--}s`;
+          if (count < 0) {
+            clearInterval(interval);
+            sendCodeBtn.disabled = false;
+            sendCodeBtn.textContent = "Send";
+          }
+        }, 1000);
+      } catch (err) {
+        errorMsg.textContent = "Failed to send email. Check SMTP token or email.";
+      }
+    };
+
+    window.togglePassword = () => {
+      const password = document.getElementById("password");
+      password.type = password.type === "password" ? "text" : "password";
+    };
+
+    window.signUp = async () => {
+      const username = document.getElementById("username").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const referral = document.getElementById("referral").value.trim();
+      const enteredCode = document.getElementById("verificationCodeInput").value.trim();
+      const errorMsg = document.getElementById("errorMsg");
+      const successMsg = document.getElementById("successMsg");
+
+      errorMsg.textContent = "";
+      successMsg.textContent = "";
+
+      if (!username || !email || !password || !enteredCode) {
+        errorMsg.textContent = "All fields except referral are required.";
+        return;
+      }
+
+      if (enteredCode !== verificationCode) {
+        errorMsg.textContent = "Incorrect verification code.";
+        return;
+      }
+
+      try {
+        const q = query(collection(db, "users"), where("username", "==", username));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          errorMsg.textContent = "Username already taken.";
+          return;
+        }
+
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        await setDoc(doc(db, "users", user.uid), {
+          username,
+          email,
+          tokens: 0,
+          referrals: [],
+          referralCode: referral || null,
+          createdAt: new Date()
+        });
+
+        successMsg.textContent = "Account created successfully!";
+        setTimeout(() => {
+          window.location.href = "login.html";
+        }, 2000);
+      } catch (error) {
+        errorMsg.textContent = error.message;
+      }
+    };
   </script>
-</body>  
-                                                                       </html>
+</body>
+  </html>
