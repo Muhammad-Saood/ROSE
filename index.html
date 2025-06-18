@@ -88,11 +88,13 @@
     <button onclick="signUp()">Sign Up</button>
   </div>
 
-  <!-- Firebase and SMTP Script -->
+  <!-- SMTP.js -->
   <script src="https://smtpjs.com/v3/smtp.js"></script>
+
+  <!-- Firebase Scripts -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+    import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDocs, collection, query, where } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -180,6 +182,7 @@
       }
 
       try {
+        // Check username uniqueness
         const q = query(collection(db, "users"), where("username", "==", username));
         const querySnapshot = await getDocs(q);
         if (!querySnapshot.empty) {
@@ -187,9 +190,14 @@
           return;
         }
 
+        // Create user
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
+        // Send Firebase email verification
+        await sendEmailVerification(user);
+
+        // Store user data in Firestore
         await setDoc(doc(db, "users", user.uid), {
           username,
           email,
@@ -199,7 +207,7 @@
           createdAt: new Date()
         });
 
-        successMsg.textContent = "Account created successfully!";
+        successMsg.textContent = "Account created! Verification email sent.";
         setTimeout(() => {
           window.location.href = "login.html";
         }, 2000);
@@ -209,4 +217,4 @@
     };
   </script>
 </body>
-  </html>
+</html>
