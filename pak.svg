@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Circle Background -->
+  <circle cx="100" cy="100" r="100" fill="#01411C"></circle>
+
+  <!-- White Stripe -->
+  <rect x="0" y="0" width="50" height="200" fill="#FFFFFF" clip-path="url(#clipCircle)"></rect>
+
+  <!-- Crescent -->
+  <circle cx="120" cy="90" r="40" fill="#FFFFFF"></circle>
+  <circle cx="130" cy="85" r="35" fill="#01411C"></circle>
+
+  <!-- Star -->
+  <polygon points="140,55 145,70 160,70 148,80 153,95 140,85 127,95 132,80 120,70 135,70" fill="#FFFFFF"></polygon>
+
+  <!-- Clip Path to keep stripe inside circle -->
+  <defs>
+    <clipPath id="clipCircle">
+      <circle cx="100" cy="100" r="100"></circle>
+    </clipPath>
+  </defs>
+</svg>
